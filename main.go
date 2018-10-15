@@ -14,6 +14,56 @@ import (
   "github.com/joho/godotenv"
 )
 
+func main() {
+  err := godotenv.Load()
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  go func() {
+    t := time.Now()
+    genesisBlock := Block{0, t.String(), 0, "", ""}
+    Blockchain = append(Blockchain, genesisBlock)
+  }()
+
+  log.Fatal(run())
+}
+
+func makeMuxRouter() http.Handler {
+  muxRouter := mux.NewRouter()
+  muxRouter.HandleFunc("/", handleGetBlockchain).Methods("GET")
+  // muxRouter.HandleFunc("/", handleWriteBlock).Methods("POST")
+  return muxRouter
+}
+
+func handleGetBlockchain(w http.ResponseWriter, r *http.Request) {
+  bytes, err := json.MarshalIndent(Blockchain, "", "  ")
+  if err != nil {
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+    return
+  }
+  io.WriteString(w, string(bytes))
+}
+
+func run() error {
+  mux := makeMuxRouter()
+  httpAddr := os.Getenv("PORT")
+  log.Println("Listening on ", os.Getenv("PORT"))
+  s := &http.Server{
+    Addr:           ":" + httpAddr,
+    Handler:        mux,
+    ReadTimeout:    10 * time.Second,
+    WriteTimeout:   10 * time.Second,
+    MaxHeaderBytes: 1 << 20,
+  }
+
+  if err := s.ListenAndServe(); err != nil {
+    return err
+  }
+
+  return nil
+}
+
 type Block struct {
   Index      int
   Timestamp  string
@@ -26,17 +76,17 @@ var Blockchain []Block
 
 // Calculate a hash using SHA256 given a block
 func calculateHash(b Block) string {
-  record := string(b.Index) +b.Timestamp + string(b.data) + b.PrevHash
+  record := string(b.Index) +b.Timestamp + string(b.Data) + b.PrevHash
   hash := sha256.New()
   hash.Write([]byte(record))
-  hashed := h.Sum(nil)
+  hashed := hash.Sum(nil)
   return hex.EncodeToString(hashed)
 }
 
 // Generate a new block and autoincrement index
 func generateBlock(oldBlock Block, data int) (Block, error) {
   var newBlock Block
-  t := Time.now()
+  t := time.Now()
 
   newBlock.Index = oldBlock.Index + 1
   newBlock.Timestamp = t.String()
@@ -65,6 +115,6 @@ func isBlockValid(newBlock Block, oldBlock Block) bool {
 
 func replaceChain(newBlocks []Block) {
   if len(newBlocks) > len(Blockchain) {
-    Blockchain = newBlock
+    Blockchain = newBlocks
   }
 }
