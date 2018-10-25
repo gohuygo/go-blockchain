@@ -14,8 +14,6 @@ type Block struct {
   PrevHash   string
 }
 
-
-
 var Blockchain []Block
 
 // Generate a new block and autoincrement index

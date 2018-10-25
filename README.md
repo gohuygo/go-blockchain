@@ -1,5 +1,7 @@
-## Babby's First Blockchain in Go
+## Blockchain in Go
 
-# TODO
+  An implementation of a blockchain from scratch after reading Mastering Bitcoin.
 
-  1. Add nonce and target hash value
+# Server
+
+  `go run main.go`
