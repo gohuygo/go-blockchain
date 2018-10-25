@@ -2,6 +2,6 @@
 
   An implementation of a blockchain from scratch after reading Mastering Bitcoin.
 
-# Server
+### Server
 
   `go run main.go`
