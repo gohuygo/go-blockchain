@@ -8,7 +8,7 @@ import (
   "os"
   "time"
 
-  "github.com/gohuygo/go-blockchain/block"
+  "github.com/gohuygo/go-blockchain/blockchain"
 
   "github.com/gorilla/mux"
   "github.com/joho/godotenv"
@@ -26,8 +26,8 @@ func main() {
 
   go func() {
     t := time.Now()
-    genesisBlock := block.Block{0, t.String(), 0, "", ""}
-    block.Blockchain = append(block.Blockchain, genesisBlock)
+    genesisBlock := blockchain.Block{0, t.String(), 0, "", ""}
+    blockchain.Blockchain = append(blockchain.Blockchain, genesisBlock)
   }()
 
   log.Fatal(run())
@@ -42,16 +42,16 @@ func handleWriteBlock(w http.ResponseWriter, r *http.Request) {
   }
   defer r.Body.Close()
 
-  newBlock, err := block.GenerateBlock(block.Blockchain[len(block.Blockchain)-1], requestBody.Data)
+  newBlock, err := blockchain.GenerateBlock(blockchain.Blockchain[len(blockchain.Blockchain)-1], requestBody.Data)
 
   if err != nil {
     respondWithJSON(w, r, http.StatusInternalServerError, requestBody)
     return
   }
 
-  if block.IsBlockValid(newBlock, block.Blockchain[len(block.Blockchain)-1]) {
-    newBlockchain := append(block.Blockchain, newBlock)
-    block.ReplaceChain(newBlockchain)
+  if blockchain.IsBlockValid(newBlock, blockchain.Blockchain[len(blockchain.Blockchain)-1]) {
+    newBlockchain := append(blockchain.Blockchain, newBlock)
+    blockchain.ReplaceChain(newBlockchain)
   }
 
   respondWithJSON(w, r, http.StatusCreated, newBlock)
@@ -86,7 +86,7 @@ func run() error {
 }
 
 func handleGetBlockchain(w http.ResponseWriter, r *http.Request) {
-  bytes, err := json.MarshalIndent(block.Blockchain, "", "  ")
+  bytes, err := json.MarshalIndent(blockchain.Blockchain, "", "  ")
   if err != nil {
     http.Error(w, err.Error(), http.StatusInternalServerError)
     return
