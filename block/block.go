@@ -45,6 +45,7 @@ func GenerateBlock(oldBlock Block, transaction string) (Block, error) {
 }
 
 func IsBlockValid(newBlock Block, oldBlock Block) bool {
+  // TODO: Validate each UTXO
   if oldBlock.Index+1 != newBlock.Index {
     return false
   }

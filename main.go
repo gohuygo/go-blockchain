@@ -1,7 +1,6 @@
 package main
 
 import (
-  // "encoding/json"
   "io"
   "log"
   "os"
@@ -10,26 +9,15 @@ import (
 
   "github.com/gohuygo/go-blockchain/block"
 
-  // "github.com/gorilla/mux"
   "github.com/joho/godotenv"
   "github.com/davecgh/go-spew/spew"
 )
-
-// Request body that is serialized/marshalled from input body.
-type RequestBody struct {
-  Data int
-}
-
-var bcServer chan []block.Block
-var strings = make(chan string)
 
 func main() {
   err := godotenv.Load()
   if err != nil {
     log.Fatal(err)
   }
-
-  bcServer = make(chan []block.Block)
 
   // Overzealous use of goroutine?
   go func() {
