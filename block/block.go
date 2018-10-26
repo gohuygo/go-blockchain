@@ -8,11 +8,12 @@ import(
 )
 
 type Block struct {
-  Index        int
+  Index        uint
   Timestamp    string
   Transaction  string
   Hash         string
   PrevHash     string
+  Nonce        uint
 }
 
 var Blockchain []Block
@@ -24,7 +25,8 @@ func GenerateGenesisBlock(){
     return
   }
 
-  genesisBlock := Block{0, time.Now().String(), "reddit.com - 1540542759 - Uber driver hair formed a perfect 25.", "", ""}
+  // TODO: Setup Nonce!
+  genesisBlock := Block{0, time.Now().String(), "reddit.com - 1540542759 - Uber driver hair formed a perfect 25.", "", "", 0}
   genesisBlock.Hash = calculateBlockHash(genesisBlock)
 
   Blockchain = append(Blockchain, genesisBlock)
