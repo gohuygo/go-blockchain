@@ -44,6 +44,7 @@ func main() {
   }
 }
 
+// Refactor to use channels?
 func handleConn(conn net.Conn) {
   defer conn.Close()
   conn.Write([]byte("Enter transactions (seperated by return): "))
