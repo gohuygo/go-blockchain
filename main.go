@@ -4,10 +4,7 @@ import (
   // "encoding/json"
   "io"
   "log"
-  // "net/http"
   "os"
-  // "time"
-  // "strconv"
   "net"
   "bufio"
 
@@ -15,7 +12,13 @@ import (
 
   // "github.com/gorilla/mux"
   "github.com/joho/godotenv"
+  "github.com/davecgh/go-spew/spew"
 )
+
+// Request body that is serialized/marshalled from input body.
+type RequestBody struct {
+  Data int
+}
 
 var bcServer chan []block.Block
 var strings = make(chan string)
@@ -26,12 +29,12 @@ func main() {
     log.Fatal(err)
   }
 
-  // bcServer = make(chan []block.Block)
+  bcServer = make(chan []block.Block)
 
-  // t := time.Now()
-  // genesisBlock := block.Block{0, t.String(), 0, "", ""}
-  // block.Blockchain = append(block.Blockchain, genesisBlock)
-
+  // Overzealous use of goroutine?
+  go func() {
+    block.GenerateGenesisBlock()
+  }()
 
   server, err := net.Listen("tcp", ":"+os.Getenv("PORT"))
 
@@ -39,7 +42,8 @@ func main() {
     log.Fatal(err)
   }
 
-  log.Println("HTTP Server Listening on port :", os.Getenv("PORT"))
+  log.Println("HTTP Server Listening on port: ", os.Getenv("PORT"))
+
   defer server.Close()
 
   for {
@@ -53,24 +57,27 @@ func main() {
 
 func handleConn(conn net.Conn) {
   defer conn.Close()
-  io.WriteString(conn, "Enter a transaction:")
+  io.WriteString(conn, "Enter a transaction: ")
 
   // Take input and add it to blockchain
   // TODO: Check for newly validated blocks instead
-
   scanner := bufio.NewScanner(conn)
+  scanner.Scan()
 
-  go func() {
-    for scanner.Scan() {
-      log.Println("User entered: ")
-      strings <- scanner.Text()
-    }
 
-    // log.Println(block.Blockchain)
-  }()
+  // TODO: Send transaction to mempool instead
+  newBlock, err := block.GenerateBlock(block.Blockchain[len(block.Blockchain)-1], scanner.Text())
 
-  for c := range strings {
-    log.Println(c)
+  if err != nil {
+    io.WriteString(conn, "(500) Internal Server Error")
+    return
   }
+
+  if block.IsBlockValid(newBlock, block.Blockchain[len(block.Blockchain)-1]) {
+    newBlockchain := append(block.Blockchain, newBlock)
+    block.ReplaceChain(newBlockchain)
+  }
+
+  spew.Dump(block.Blockchain)
 }
 

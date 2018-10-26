@@ -4,26 +4,40 @@ import(
   "crypto/sha256"
   "encoding/hex"
   "time"
+  "log"
 )
 
 type Block struct {
-  Index      int
-  Timestamp  string
-  Data       int
-  Hash       string
-  PrevHash   string
+  Index        int
+  Timestamp    string
+  Transaction  string
+  Hash         string
+  PrevHash     string
 }
 
 var Blockchain []Block
 
+// Generate a genesis block - will log fatal if a block already exists and terminate
+func GenerateGenesisBlock(){
+  if len(Blockchain) > 0 {
+    log.Fatal("A genesis block already exists.")
+    return
+  }
+
+  genesisBlock := Block{0, time.Now().String(), "reddit.com - 1540540162 - Jared Kushner reportedly wants Trump to back Saudi crown prince", "", ""}
+  genesisBlock.Hash = calculateBlockHash(genesisBlock)
+
+  Blockchain = append(Blockchain, genesisBlock)
+}
+
 // Generate a new block and autoincrement index
-func GenerateBlock(oldBlock Block, data int) (Block, error) {
+func GenerateBlock(oldBlock Block, transaction string) (Block, error) {
   var newBlock Block
   t := time.Now()
 
   newBlock.Index = oldBlock.Index + 1
   newBlock.Timestamp = t.String()
-  newBlock.Data = data
+  newBlock.Transaction = transaction
   newBlock.PrevHash = oldBlock.Hash
   newBlock.Hash = calculateBlockHash(newBlock)
 
@@ -54,7 +68,7 @@ func ReplaceChain(newBlocks []Block) {
 
 // Calculate a hash using SHA256 given a block
 func calculateBlockHash(b Block) string {
-  record := string(b.Index) +b.Timestamp + string(b.Data) + b.PrevHash
+  record := string(b.Index) +b.Timestamp + string(b.Transaction) + b.PrevHash
   hash := sha256.New()
   hash.Write([]byte(record))
   hashed := hash.Sum(nil)
