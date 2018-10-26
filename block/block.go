@@ -1,4 +1,4 @@
-package blockchain
+package block
 
 import(
   "crypto/sha256"
@@ -25,7 +25,7 @@ func GenerateBlock(oldBlock Block, data int) (Block, error) {
   newBlock.Timestamp = t.String()
   newBlock.Data = data
   newBlock.PrevHash = oldBlock.Hash
-  newBlock.Hash = calculateHash(newBlock)
+  newBlock.Hash = calculateBlockHash(newBlock)
 
   return newBlock, nil
 }
@@ -39,7 +39,7 @@ func IsBlockValid(newBlock Block, oldBlock Block) bool {
     return false
   }
 
-  if calculateHash(newBlock) != newBlock.Hash {
+  if calculateBlockHash(newBlock) != newBlock.Hash {
     return false
   }
 
@@ -53,7 +53,7 @@ func ReplaceChain(newBlocks []Block) {
 }
 
 // Calculate a hash using SHA256 given a block
-func calculateHash(b Block) string {
+func calculateBlockHash(b Block) string {
   record := string(b.Index) +b.Timestamp + string(b.Data) + b.PrevHash
   hash := sha256.New()
   hash.Write([]byte(record))
