@@ -24,7 +24,7 @@ func GenerateGenesisBlock(){
     return
   }
 
-  genesisBlock := Block{0, time.Now().String(), "reddit.com - 1540540162 - Jared Kushner reportedly wants Trump to back Saudi crown prince", "", ""}
+  genesisBlock := Block{0, time.Now().String(), "reddit.com - 1540542759 - Uber driver hair formed a perfect 25.", "", ""}
   genesisBlock.Hash = calculateBlockHash(genesisBlock)
 
   Blockchain = append(Blockchain, genesisBlock)

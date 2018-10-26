@@ -6,6 +6,7 @@ import (
   "os"
   "net"
   "bufio"
+  "strings"
 
   "github.com/gohuygo/go-blockchain/block"
 
@@ -45,27 +46,30 @@ func main() {
 
 func handleConn(conn net.Conn) {
   defer conn.Close()
-  io.WriteString(conn, "Enter a transaction: ")
+  conn.Write([]byte("Enter transactions (seperated by return): "))
 
-  // Take input and add it to blockchain
-  // TODO: Check for newly validated blocks instead
-  scanner := bufio.NewScanner(conn)
-  scanner.Scan()
+  for {
+    netData, err := bufio.NewReader(conn).ReadString('\n')
+    if err == io.EOF {
+      conn.Write([]byte("Session ended."))
+      log.Println("Connection closed by client.")
+      break
+    }
 
+    transaction := strings.TrimSpace(string(netData))
 
-  // TODO: Send transaction to mempool instead
-  newBlock, err := block.GenerateBlock(block.Blockchain[len(block.Blockchain)-1], scanner.Text())
+    // TODO: Send transaction to mempool instead
+    newBlock, err := block.GenerateBlock(block.Blockchain[len(block.Blockchain)-1], transaction)
+    if err != nil {
+      io.WriteString(conn, "(500) Internal Server Error")
+      return
+    }
 
-  if err != nil {
-    io.WriteString(conn, "(500) Internal Server Error")
-    return
+    if block.IsBlockValid(newBlock, block.Blockchain[len(block.Blockchain)-1]) {
+      newBlockchain := append(block.Blockchain, newBlock)
+      block.ReplaceChain(newBlockchain)
+    }
   }
-
-  if block.IsBlockValid(newBlock, block.Blockchain[len(block.Blockchain)-1]) {
-    newBlockchain := append(block.Blockchain, newBlock)
-    block.ReplaceChain(newBlockchain)
-  }
-
   spew.Dump(block.Blockchain)
 }
 
