@@ -1,4 +1,4 @@
-package block
+package blockchain
 
 import(
   "crypto/sha256"
@@ -13,8 +13,6 @@ type Block struct {
   Hash       string
   PrevHash   string
 }
-
-
 
 var Blockchain []Block
 
