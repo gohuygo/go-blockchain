@@ -18,6 +18,7 @@ import (
 )
 
 var bcServer chan []block.Block
+var strings = make(chan string)
 
 func main() {
   err := godotenv.Load()
@@ -62,10 +63,14 @@ func handleConn(conn net.Conn) {
   go func() {
     for scanner.Scan() {
       log.Println("User entered: ")
-      log.Println(scanner.Text())
+      strings <- scanner.Text()
     }
 
     // log.Println(block.Blockchain)
   }()
+
+  for c := range strings {
+    log.Println(c)
+  }
 }
 
