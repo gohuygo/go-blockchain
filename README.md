@@ -4,8 +4,8 @@
 
 ### Vision
 
-  Just get it to work for now.
-
+  Get it working.
+  
 ### Server
 
   `go run main.go`
