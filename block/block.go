@@ -22,7 +22,7 @@ var Blockchain []Block
 
 // Block difficulty is number of leading 0s.
 // Every additional 0 decreases space by half (i.e. puzzle requires 2x hashing power to solve).
-const blockTarget = "000"
+const blockTarget = "0000"
 
 const startingNonce = 0
 const genesisNonce  = 170
@@ -38,6 +38,7 @@ func GenerateBlock(oldBlock Block, transaction string) (Block, error) {
   newBlock.PrevHash = oldBlock.Hash
   newBlock.Hash, newBlock.Nonce = calculateBlockHash(newBlock, startingNonce)
 
+  log.Println("Created Block #" + strconv.Itoa(int(newBlock.Index)))
   return newBlock, nil
 }
 
@@ -51,8 +52,7 @@ func IsBlockValid(newBlock Block, oldBlock Block) bool {
     return false
   }
 
-  log.Println("IsBlockValid:" + string(int(newBlock.Nonce)))
-  hash, _ := calculateBlockHash(newBlock, newBlock.Nonce)
+  hash := doubleSha(newBlock, newBlock.Nonce)
 
   if hash != newBlock.Hash {
     return false
@@ -66,6 +66,7 @@ func ReplaceChain(newBlocks []Block) {
     Blockchain = newBlocks
   }
 }
+
 
 // Generate a genesis block - will log fatal if a block already exists and terminate
 func GenerateGenesisBlock(){
@@ -86,8 +87,7 @@ func calculateBlockHash(b Block, nonce uint) (string, uint) {
   startsWith := false
   encodedString := ""
 
-  for  {
-    log.Println("Attempting to mine with nonce: " + strconv.Itoa(int(nonce)))
+  for {
     encodedString = doubleSha(b, nonce)
     startsWith = strings.HasPrefix(encodedString, blockTarget)
 
@@ -99,7 +99,7 @@ func calculateBlockHash(b Block, nonce uint) (string, uint) {
     nonce++
   }
 
-  return encodedString, nonce-1
+  return encodedString, nonce
 }
 
 func doubleSha(b Block, nonce uint) string {
