@@ -28,8 +28,10 @@ const startingNonce = 0
 const genesisNonce  = 170
 
 // Generate a new block and autoincrement index
-func GenerateBlock(oldBlock Block, transaction string) (Block, error) {
+func GenerateBlock(transaction string) (Block, error) {
   var newBlock Block
+
+  oldBlock := Blockchain[len(Blockchain)-1]
   t := time.Now()
 
   newBlock.Index = oldBlock.Index + 1
@@ -42,7 +44,8 @@ func GenerateBlock(oldBlock Block, transaction string) (Block, error) {
   return newBlock, nil
 }
 
-func IsBlockValid(newBlock Block, oldBlock Block) bool {
+func IsBlockValid(newBlock Block) bool {
+  oldBlock := Blockchain[len(Blockchain)-1]
   // TODO: Validate each UTXO
   if oldBlock.Index+1 != newBlock.Index {
     return false
@@ -72,7 +75,6 @@ func ReplaceChain(newBlocks []Block) {
   }
 }
 
-
 // Generate a genesis block - will log fatal if a block already exists and terminate
 func GenerateGenesisBlock(){
   if len(Blockchain) > 0 {
@@ -89,11 +91,9 @@ func GenerateGenesisBlock(){
 
 // Calculate a hash using SHA256 given a block
 func calculateBlockHash(b Block, nonce uint) (string, uint) {
-  startsWith := false
   encodedString := ""
 
   for {
-
     encodedString = crypto.DoubleSha(
       strconv.Itoa(int(b.Index)),
       string(b.Transaction),
@@ -101,9 +101,9 @@ func calculateBlockHash(b Block, nonce uint) (string, uint) {
       strconv.Itoa(int(nonce)),
     )
 
-    startsWith = strings.HasPrefix(encodedString, blockTarget)
+    startsWithTarget := strings.HasPrefix(encodedString, blockTarget)
 
-    if(startsWith){
+    if(startsWithTarget){
       log.Println("Solved with nonce: " + strconv.Itoa(int(nonce)))
       break;
     }

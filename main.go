@@ -60,13 +60,13 @@ func handleConn(conn net.Conn) {
     transaction := strings.TrimSpace(string(netData))
 
     // TODO: Send transaction to mempool instead
-    newBlock, err := block.GenerateBlock(block.Blockchain[len(block.Blockchain)-1], transaction)
+    newBlock, err := block.GenerateBlock(transaction)
     if err != nil {
       io.WriteString(conn, "(500) Internal Server Error")
       return
     }
 
-    if block.IsBlockValid(newBlock, block.Blockchain[len(block.Blockchain)-1]) {
+    if block.IsBlockValid(newBlock) {
       newBlockchain := append(block.Blockchain, newBlock)
       block.ReplaceChain(newBlockchain)
     }
