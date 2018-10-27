@@ -8,10 +8,10 @@ import (
   "bufio"
   "strings"
 
-  "github.com/gohuygo/go-blockchain/block"
-
   "github.com/joho/godotenv"
   "github.com/davecgh/go-spew/spew"
+
+  "github.com/gohuygo/go-blockchain/block"
 )
 
 func main() {

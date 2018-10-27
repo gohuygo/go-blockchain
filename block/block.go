@@ -1,12 +1,12 @@
 package block
 
 import(
-  "crypto/sha256"
-  "encoding/hex"
   "time"
   "log"
   "strings"
   "strconv"
+
+  "github.com/gohuygo/go-blockchain/crypto"
 )
 
 type Block struct {
@@ -52,7 +52,12 @@ func IsBlockValid(newBlock Block, oldBlock Block) bool {
     return false
   }
 
-  hash := doubleSha(newBlock, newBlock.Nonce)
+  hash := crypto.DoubleSha(
+    strconv.Itoa(int(newBlock.Index)),
+    string(newBlock.Transaction),
+    newBlock.PrevHash,
+    strconv.Itoa(int(newBlock.Nonce)),
+  )
 
   if hash != newBlock.Hash {
     return false
@@ -88,7 +93,14 @@ func calculateBlockHash(b Block, nonce uint) (string, uint) {
   encodedString := ""
 
   for {
-    encodedString = doubleSha(b, nonce)
+
+    encodedString = crypto.DoubleSha(
+      strconv.Itoa(int(b.Index)),
+      string(b.Transaction),
+      b.PrevHash,
+      strconv.Itoa(int(nonce)),
+    )
+
     startsWith = strings.HasPrefix(encodedString, blockTarget)
 
     if(startsWith){
@@ -100,16 +112,4 @@ func calculateBlockHash(b Block, nonce uint) (string, uint) {
   }
 
   return encodedString, nonce
-}
-
-func doubleSha(b Block, nonce uint) string {
-  hash := sha256.New()
-  record := strconv.Itoa(int(b.Index)) + string(b.Transaction) + b.PrevHash + strconv.Itoa(int(nonce))
-  hash.Write([]byte(record))
-  hashed := hash.Sum(nil)
-
-  hash.Write([]byte(hashed))
-  secondHashed := hash.Sum(nil)
-
-  return hex.EncodeToString(secondHashed)
 }
