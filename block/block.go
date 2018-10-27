@@ -5,6 +5,8 @@ import(
   "encoding/hex"
   "time"
   "log"
+  "strings"
+  "strconv"
 )
 
 type Block struct {
@@ -18,19 +20,12 @@ type Block struct {
 
 var Blockchain []Block
 
-// Generate a genesis block - will log fatal if a block already exists and terminate
-func GenerateGenesisBlock(){
-  if len(Blockchain) > 0 {
-    log.Fatal("A genesis block already exists.")
-    return
-  }
+// Block difficulty is number of leading 0s.
+// Every additional 0 decreases space by half (i.e. puzzle requires 2x hashing power to solve).
+const blockTarget = "0000"
 
-  // TODO: Setup Nonce!
-  genesisBlock := Block{0, time.Now().String(), "reddit.com - 1540542759 - Uber driver hair formed a perfect 25.", "", "", 0}
-  genesisBlock.Hash = calculateBlockHash(genesisBlock)
-
-  Blockchain = append(Blockchain, genesisBlock)
-}
+const startingNonce = 0
+const genesisNonce  = 170
 
 // Generate a new block and autoincrement index
 func GenerateBlock(oldBlock Block, transaction string) (Block, error) {
@@ -41,8 +36,9 @@ func GenerateBlock(oldBlock Block, transaction string) (Block, error) {
   newBlock.Timestamp = t.String()
   newBlock.Transaction = transaction
   newBlock.PrevHash = oldBlock.Hash
-  newBlock.Hash = calculateBlockHash(newBlock)
+  newBlock.Hash, newBlock.Nonce = calculateBlockHash(newBlock, startingNonce)
 
+  log.Println("Created Block #" + strconv.Itoa(int(newBlock.Index)))
   return newBlock, nil
 }
 
@@ -56,7 +52,9 @@ func IsBlockValid(newBlock Block, oldBlock Block) bool {
     return false
   }
 
-  if calculateBlockHash(newBlock) != newBlock.Hash {
+  hash := doubleSha(newBlock, newBlock.Nonce)
+
+  if hash != newBlock.Hash {
     return false
   }
 
@@ -69,11 +67,49 @@ func ReplaceChain(newBlocks []Block) {
   }
 }
 
+
+// Generate a genesis block - will log fatal if a block already exists and terminate
+func GenerateGenesisBlock(){
+  if len(Blockchain) > 0 {
+    log.Fatal("A genesis block already exists.")
+    return
+  }
+
+  genesisBlock := Block{0, time.Now().String(), "reddit.com - 1540542759 - Uber driver hair formed a perfect 25.", "", "", genesisNonce}
+  genesisBlock.Hash, genesisBlock.Nonce = calculateBlockHash(genesisBlock, genesisNonce)
+
+  log.Println("Genesis Block created.")
+  Blockchain = append(Blockchain, genesisBlock)
+}
+
 // Calculate a hash using SHA256 given a block
-func calculateBlockHash(b Block) string {
-  record := string(b.Index) +b.Timestamp + string(b.Transaction) + b.PrevHash
+func calculateBlockHash(b Block, nonce uint) (string, uint) {
+  startsWith := false
+  encodedString := ""
+
+  for {
+    encodedString = doubleSha(b, nonce)
+    startsWith = strings.HasPrefix(encodedString, blockTarget)
+
+    if(startsWith){
+      log.Println("Solved with nonce: " + strconv.Itoa(int(nonce)))
+      break;
+    }
+
+    nonce++
+  }
+
+  return encodedString, nonce
+}
+
+func doubleSha(b Block, nonce uint) string {
   hash := sha256.New()
+  record := strconv.Itoa(int(b.Index)) + string(b.Transaction) + b.PrevHash + strconv.Itoa(int(nonce))
   hash.Write([]byte(record))
   hashed := hash.Sum(nil)
-  return hex.EncodeToString(hashed)
+
+  hash.Write([]byte(hashed))
+  secondHashed := hash.Sum(nil)
+
+  return hex.EncodeToString(secondHashed)
 }
