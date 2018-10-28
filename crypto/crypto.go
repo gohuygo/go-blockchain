@@ -2,7 +2,6 @@ package crypto
 
 import(
   "crypto/sha256"
-  // "encoding/hex"
 )
 
 func DoubleSha256(index string, transaction string, prevHash []byte, nonce string) []byte {
@@ -10,7 +9,6 @@ func DoubleSha256(index string, transaction string, prevHash []byte, nonce strin
 
   hash := sha256.Sum256(record[:])
   finalHashed := sha256.Sum256(hash[:])
-
   return finalHashed[:]
 }
 

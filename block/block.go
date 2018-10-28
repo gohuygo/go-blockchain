@@ -5,6 +5,7 @@ import(
   "log"
   "errors"
   "strconv"
+  "fmt"
 
   "github.com/google/go-cmp/cmp"
 
@@ -98,9 +99,26 @@ func calculateBlockHash(b Block, nonce uint) ([]byte, uint) {
       strconv.Itoa(int(nonce)),
     )
 
+    // TODO: Figure out ASCII vs Hex, Encoding etc
+    log.Println("***")
+
+    fmt.Print("Integer = ")
+    fmt.Println([]byte("000"))
+
+    fmt.Print("Ascii = ")
+    fmt.Printf("%c", []byte("000"))
+    fmt.Println("")
+
+    fmt.Print("Binary = ")
+    fmt.Printf("%b", []byte("000"))
+    fmt.Println("")
+
+    log.Println("***")
+
     startsWithTarget := cmp.Equal(encodedString[:3], []byte("000")) // 0 maps to 48 in ASCII
 
     if(startsWithTarget){
+      fmt.Printf("%c\n", encodedString)
       log.Println("Solved with nonce: " + strconv.Itoa(int(nonce)))
       break;
     }
