@@ -6,6 +6,7 @@ import(
   "errors"
   "strconv"
   "fmt"
+  "encoding/hex"
 
   "github.com/google/go-cmp/cmp"
 
@@ -89,10 +90,10 @@ func GenerateGenesisBlock(){
 
 // Calculate a hash using SHA256 given a block
 func calculateBlockHash(b Block, nonce uint) ([]byte, uint) {
-  var encodedString []byte
+  var blockHash []byte
 
   for {
-    encodedString = crypto.DoubleSha256(
+    blockHash = crypto.DoubleSha256(
       strconv.Itoa(int(b.Index)),
       string(b.Transaction),
       b.PrevHash,
@@ -113,12 +114,14 @@ func calculateBlockHash(b Block, nonce uint) ([]byte, uint) {
     fmt.Printf("%b", []byte("000"))
     fmt.Println("")
 
+    fmt.Println(hex.EncodeToString(blockHash))
+
     log.Println("***")
 
-    startsWithTarget := cmp.Equal(encodedString[:3], []byte("000")) // 0 maps to 48 in ASCII
+    startsWithTarget := cmp.Equal(blockHash[:3], []byte("000")) // 0 maps to 48 in ASCII
 
     if(startsWithTarget){
-      fmt.Printf("%c\n", encodedString)
+      fmt.Printf("%c\n", blockHash)
       log.Println("Solved with nonce: " + strconv.Itoa(int(nonce)))
       break;
     }
@@ -126,5 +129,5 @@ func calculateBlockHash(b Block, nonce uint) ([]byte, uint) {
     nonce++
   }
 
-  return encodedString, nonce
+  return blockHash, nonce
 }
