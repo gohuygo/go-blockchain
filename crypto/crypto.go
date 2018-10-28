@@ -2,18 +2,15 @@ package crypto
 
 import(
   "crypto/sha256"
-  "encoding/hex"
+  // "encoding/hex"
 )
 
+func DoubleSha256(index string, transaction string, prevHash []byte, nonce string) []byte {
+  record := []byte(index + transaction + string(prevHash) + nonce)
 
-func DoubleSha(index string, transaction string, prevHash string, nonce string) string {
-  hash := sha256.New()
-  record := index + transaction + prevHash + nonce
-  hash.Write([]byte(record))
-  hashed := hash.Sum(nil)
+  hash := sha256.Sum256(record[:])
+  finalHashed := sha256.Sum256(hash[:])
 
-  hash.Write([]byte(hashed))
-  secondHashed := hash.Sum(nil)
-
-  return hex.EncodeToString(secondHashed)
+  return finalHashed[:]
 }
+

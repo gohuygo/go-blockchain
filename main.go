@@ -47,9 +47,10 @@ func main() {
 // Refactor to use channels?
 func handleConn(conn net.Conn) {
   defer conn.Close()
-  conn.Write([]byte("Enter transactions (seperated by return): "))
 
   for {
+    conn.Write([]byte("Enter transactions (seperated by return): "))
+
     netData, err := bufio.NewReader(conn).ReadString('\n')
     if err == io.EOF {
       conn.Write([]byte("Session ended."))
@@ -57,6 +58,8 @@ func handleConn(conn net.Conn) {
       break
     }
 
+    log.Println("Transaction received.")
+    log.Println("Mining...")
     transaction := strings.TrimSpace(string(netData))
 
     // TODO: Send transaction to mempool instead

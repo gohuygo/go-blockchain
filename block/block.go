@@ -3,8 +3,10 @@ package block
 import(
   "time"
   "log"
-  "strings"
+  "errors"
   "strconv"
+
+  "github.com/google/go-cmp/cmp"
 
   "github.com/gohuygo/go-blockchain/crypto"
 )
@@ -13,19 +15,15 @@ type Block struct {
   Index        uint
   Timestamp    string
   Transaction  string
-  Hash         string
-  PrevHash     string
+  Hash         []byte
+  PrevHash     []byte
   Nonce        uint
 }
 
 var Blockchain []Block
 
-// Block difficulty is number of leading 0s.
-// Every additional 0 decreases space by half (i.e. puzzle requires 2x hashing power to solve).
-const blockTarget = "0000"
-
 const startingNonce = 0
-const genesisNonce  = 170
+const genesisNonce  = 521049
 
 // Generate a new block and autoincrement index
 func GenerateBlock(transaction string) (Block, error) {
@@ -51,18 +49,18 @@ func IsBlockValid(newBlock Block) bool {
     return false
   }
 
-  if oldBlock.Hash != newBlock.PrevHash {
+  if !cmp.Equal(oldBlock.Hash, newBlock.PrevHash) {
     return false
   }
 
-  hash := crypto.DoubleSha(
+  hash := crypto.DoubleSha256(
     strconv.Itoa(int(newBlock.Index)),
     string(newBlock.Transaction),
     newBlock.PrevHash,
     strconv.Itoa(int(newBlock.Nonce)),
   )
 
-  if hash != newBlock.Hash {
+  if !cmp.Equal(hash,newBlock.Hash){
     return false
   }
 
@@ -78,11 +76,10 @@ func ReplaceChain(newBlocks []Block) {
 // Generate a genesis block - will log fatal if a block already exists and terminate
 func GenerateGenesisBlock(){
   if len(Blockchain) > 0 {
-    log.Fatal("A genesis block already exists.")
+    errors.New("A genesis block already exists.")
     return
   }
-
-  genesisBlock := Block{0, time.Now().String(), "reddit.com - 1540542759 - Uber driver hair formed a perfect 25.", "", "", genesisNonce}
+  genesisBlock := Block{0, time.Now().String(), "reddit.com - 1540542759 - Uber driver hair formed a perfect 25.", []byte(""), []byte(""), genesisNonce}
   genesisBlock.Hash, genesisBlock.Nonce = calculateBlockHash(genesisBlock, genesisNonce)
 
   log.Println("Genesis Block created.")
@@ -90,18 +87,18 @@ func GenerateGenesisBlock(){
 }
 
 // Calculate a hash using SHA256 given a block
-func calculateBlockHash(b Block, nonce uint) (string, uint) {
-  encodedString := ""
+func calculateBlockHash(b Block, nonce uint) ([]byte, uint) {
+  var encodedString []byte
 
   for {
-    encodedString = crypto.DoubleSha(
+    encodedString = crypto.DoubleSha256(
       strconv.Itoa(int(b.Index)),
       string(b.Transaction),
       b.PrevHash,
       strconv.Itoa(int(nonce)),
     )
 
-    startsWithTarget := strings.HasPrefix(encodedString, blockTarget)
+    startsWithTarget := cmp.Equal(encodedString[:3], []byte("000")) // 0 maps to 48 in ASCII
 
     if(startsWithTarget){
       log.Println("Solved with nonce: " + strconv.Itoa(int(nonce)))
