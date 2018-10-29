@@ -37,14 +37,14 @@ func (b *Block) SetHash(transaction string) {
   b.Hash, b.Nonce = calculateBlockHash(*b, startingNonce)
 }
 
-func (b *Block) HeaderString() []byte {
+func (b *Block) Data() []byte {
     index :=  strconv.Itoa(int(b.Index))
     transaction  := string(b.Transaction)
     prevHash := b.PrevHash
     nonce := strconv.Itoa(int(b.Nonce))
 
-    header := []byte(index + transaction + string(prevHash) + nonce)
-    return header
+    data := []byte(index + transaction + string(prevHash) + nonce)
+    return data
 }
 
 // Generate a new block and autoincrement index
@@ -67,7 +67,7 @@ func IsBlockValid(newBlock Block) bool {
     return false
   }
 
-  hash := crypto.DoubleSha256(newBlock.HeaderString())
+  hash := crypto.DoubleSha256(newBlock.Data())
 
   if !cmp.Equal(hash, newBlock.Hash){
     return false
@@ -107,7 +107,7 @@ func calculateBlockHash(b Block, nonce uint) ([]byte, uint) {
   var blockHash []byte
 
   for {
-    blockHash = crypto.DoubleSha256(b.HeaderString())
+    blockHash = crypto.DoubleSha256(b.Data())
 
     startsWithTarget := cmp.Equal(blockHash[:3], []byte("000"))
 
