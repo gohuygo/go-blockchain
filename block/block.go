@@ -27,21 +27,24 @@ var Blockchain []Block
 const startingNonce = 0
 const genesisNonce  = 521049
 
-// Generate a new block and autoincrement index
-func GenerateBlock(transaction string) (Block, error) {
-  var newBlock Block
-
+func (b *Block) SetHash(transaction string) {
   oldBlock := Blockchain[len(Blockchain)-1]
   t := time.Now()
 
-  newBlock.Index = oldBlock.Index + 1
-  newBlock.Timestamp = t.String()
-  newBlock.Transaction = transaction
-  newBlock.PrevHash = oldBlock.Hash
-  newBlock.Hash, newBlock.Nonce = calculateBlockHash(newBlock, startingNonce)
+  b.Index = oldBlock.Index + 1
+  b.Timestamp = t.String()
+  b.Transaction = transaction
+  b.PrevHash = oldBlock.Hash
+  b.Hash, b.Nonce = calculateBlockHash(*b, startingNonce)
+}
+
+// Generate a new block and autoincrement index
+func GenerateBlock(transaction string) (Block, error) {
+  newBlock := &Block{}
+  newBlock.SetHash(transaction)
 
   log.Println("Created Block #" + strconv.Itoa(int(newBlock.Index)))
-  return newBlock, nil
+  return *newBlock, nil
 }
 
 func IsBlockValid(newBlock Block) bool {
@@ -62,7 +65,7 @@ func IsBlockValid(newBlock Block) bool {
     strconv.Itoa(int(newBlock.Nonce)),
   )
 
-  if !cmp.Equal(hash,newBlock.Hash){
+  if !cmp.Equal(hash, newBlock.Hash){
     return false
   }
 
@@ -100,26 +103,7 @@ func calculateBlockHash(b Block, nonce uint) ([]byte, uint) {
       strconv.Itoa(int(nonce)),
     )
 
-    // TODO: Figure out ASCII vs Hex, Encoding etc
-    log.Println("***")
-
-    // fmt.Print("Integer = ")
-    // fmt.Printf([]byte("000"))
-    fmt.Println("")
-
-    fmt.Print("Ascii = ")
-    fmt.Printf("%c", []byte("000"))
-    fmt.Println("")
-
-    fmt.Print("Binary = ")
-    fmt.Printf("%b", []byte("000"))
-    fmt.Println("")
-
-    fmt.Println(blockHash[:])
-
-    log.Println("***")
-
-    startsWithTarget := cmp.Equal(blockHash[:3], []byte("000")) // 0 maps to 48 in ASCII
+    startsWithTarget := cmp.Equal(blockHash[:3], []byte("000"))
 
     if(startsWithTarget){
       fmt.Printf("%c\n", blockHash)
