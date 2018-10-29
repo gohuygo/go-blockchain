@@ -7,8 +7,7 @@ import(
   "crypto/sha256"
 )
 
-func DoubleSha256(index string, transaction string, prevHash []byte, nonce string) []byte {
-  header := []byte(index + transaction + string(prevHash) + nonce)
+func DoubleSha256(header []byte) []byte {
   buf := new(bytes.Buffer)
 
   err := binary.Write(buf, binary.LittleEndian, header)
@@ -16,9 +15,10 @@ func DoubleSha256(index string, transaction string, prevHash []byte, nonce strin
     fmt.Println("binary.Write failed:", err)
   }
 
-  hash := sha256.Sum256(buf.Bytes())
+  hash        := sha256.Sum256(buf.Bytes())
   finalHashed := sha256.Sum256(hash[:])
 
   return finalHashed[:]
 }
+
 

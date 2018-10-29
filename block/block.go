@@ -6,7 +6,6 @@ import(
   "errors"
   "strconv"
   "fmt"
-  // "encoding/hex"
 
   "github.com/google/go-cmp/cmp"
 
@@ -31,11 +30,21 @@ func (b *Block) SetHash(transaction string) {
   oldBlock := Blockchain[len(Blockchain)-1]
   t := time.Now()
 
-  b.Index = oldBlock.Index + 1
-  b.Timestamp = t.String()
-  b.Transaction = transaction
-  b.PrevHash = oldBlock.Hash
+  b.Index         = oldBlock.Index + 1
+  b.Timestamp     = t.String()
+  b.Transaction   = transaction
+  b.PrevHash      = oldBlock.Hash
   b.Hash, b.Nonce = calculateBlockHash(*b, startingNonce)
+}
+
+func (b *Block) HeaderString() []byte {
+    index :=  strconv.Itoa(int(b.Index))
+    transaction  := string(b.Transaction)
+    prevHash := b.PrevHash
+    nonce := strconv.Itoa(int(b.Nonce))
+
+    header := []byte(index + transaction + string(prevHash) + nonce)
+    return header
 }
 
 // Generate a new block and autoincrement index
@@ -58,12 +67,7 @@ func IsBlockValid(newBlock Block) bool {
     return false
   }
 
-  hash := crypto.DoubleSha256(
-    strconv.Itoa(int(newBlock.Index)),
-    string(newBlock.Transaction),
-    newBlock.PrevHash,
-    strconv.Itoa(int(newBlock.Nonce)),
-  )
+  hash := crypto.DoubleSha256(newBlock.HeaderString())
 
   if !cmp.Equal(hash, newBlock.Hash){
     return false
@@ -84,7 +88,14 @@ func GenerateGenesisBlock(){
     errors.New("A genesis block already exists.")
     return
   }
-  genesisBlock := Block{0, time.Now().String(), "reddit.com - 1540542759 - Uber driver hair formed a perfect 25.", []byte(""), []byte(""), genesisNonce}
+  genesisBlock := Block{
+    0,
+    time.Now().String(),
+    "reddit.com - 1540542759 - Uber driver hair formed a perfect 25.",
+    []byte(""),
+    []byte(""),
+    genesisNonce,
+  }
   genesisBlock.Hash, genesisBlock.Nonce = calculateBlockHash(genesisBlock, genesisNonce)
 
   log.Println("Genesis Block created.")
@@ -96,12 +107,7 @@ func calculateBlockHash(b Block, nonce uint) ([]byte, uint) {
   var blockHash []byte
 
   for {
-    blockHash = crypto.DoubleSha256(
-      strconv.Itoa(int(b.Index)),
-      string(b.Transaction),
-      b.PrevHash,
-      strconv.Itoa(int(nonce)),
-    )
+    blockHash = crypto.DoubleSha256(b.HeaderString())
 
     startsWithTarget := cmp.Equal(blockHash[:3], []byte("000"))
 
