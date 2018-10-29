@@ -1,17 +1,24 @@
 package crypto
 
 import(
-  // "encoding/binary"
+  "bytes"
+  "fmt"
+  "encoding/binary"
   "crypto/sha256"
 )
 
 func DoubleSha256(index string, transaction string, prevHash []byte, nonce string) []byte {
-  record := []byte(index + transaction + string(prevHash) + nonce)
-  // uintRecord, _ := binary.Uvarint(record)
-  // recordEndian := binary.LittleEndian.Uint64(record)
+  header := []byte(index + transaction + string(prevHash) + nonce)
+  buf := new(bytes.Buffer)
 
-  hash := sha256.Sum256(record[:])
+  err := binary.Write(buf, binary.LittleEndian, header)
+  if err != nil {
+    fmt.Println("binary.Write failed:", err)
+  }
+
+  hash := sha256.Sum256(buf.Bytes())
   finalHashed := sha256.Sum256(hash[:])
+
   return finalHashed[:]
 }
 

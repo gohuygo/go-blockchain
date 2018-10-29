@@ -6,7 +6,7 @@ import(
   "errors"
   "strconv"
   "fmt"
-  "encoding/hex"
+  // "encoding/hex"
 
   "github.com/google/go-cmp/cmp"
 
@@ -103,8 +103,9 @@ func calculateBlockHash(b Block, nonce uint) ([]byte, uint) {
     // TODO: Figure out ASCII vs Hex, Encoding etc
     log.Println("***")
 
-    fmt.Print("Integer = ")
-    fmt.Println([]byte("000"))
+    // fmt.Print("Integer = ")
+    // fmt.Printf([]byte("000"))
+    fmt.Println("")
 
     fmt.Print("Ascii = ")
     fmt.Printf("%c", []byte("000"))
@@ -114,7 +115,7 @@ func calculateBlockHash(b Block, nonce uint) ([]byte, uint) {
     fmt.Printf("%b", []byte("000"))
     fmt.Println("")
 
-    fmt.Println(hex.EncodeToString(blockHash))
+    fmt.Println(blockHash[:])
 
     log.Println("***")
 
