@@ -38,22 +38,21 @@ func (b *Block) SetHash(transaction string) {
 }
 
 func (b *Block) Data() []byte {
-    index :=  strconv.Itoa(int(b.Index))
-    transaction  := string(b.Transaction)
-    prevHash := b.PrevHash
-    nonce := strconv.Itoa(int(b.Nonce))
+    index       :=  strconv.Itoa(int(b.Index))
+    transaction := string(b.Transaction)
+    prevHash    := b.PrevHash
+    nonce       := strconv.Itoa(int(b.Nonce))
 
-    data := []byte(index + transaction + string(prevHash) + nonce)
-    return data
+    return []byte(index + transaction + string(prevHash) + nonce)
 }
 
 // Generate a new block and autoincrement index
-func GenerateBlock(transaction string) (Block, error) {
+func GenerateBlock(transaction string) *Block {
   newBlock := &Block{}
   newBlock.SetHash(transaction)
 
   log.Println("Created Block #" + strconv.Itoa(int(newBlock.Index)))
-  return *newBlock, nil
+  return newBlock
 }
 
 func IsBlockValid(newBlock Block) bool {
@@ -108,7 +107,6 @@ func calculateBlockHash(b Block, nonce uint) ([]byte, uint) {
 
   for {
     blockHash = crypto.DoubleSha256(b.Data())
-
     startsWithTarget := cmp.Equal(blockHash[:3], []byte("000"))
 
     if(startsWithTarget){
@@ -116,7 +114,6 @@ func calculateBlockHash(b Block, nonce uint) ([]byte, uint) {
       log.Println("Solved with nonce: " + strconv.Itoa(int(nonce)))
       break;
     }
-
     nonce++
   }
 
