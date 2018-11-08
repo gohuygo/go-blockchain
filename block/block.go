@@ -5,7 +5,6 @@ import(
   "log"
   "errors"
   "strconv"
-  "fmt"
 
   "github.com/google/go-cmp/cmp"
 
@@ -25,6 +24,7 @@ var Blockchain []Block
 
 const startingNonce = 0
 const genesisNonce  = 521049
+const difficulty = 3
 
 func (b *Block) SetHash(transaction string) {
   oldBlock := Blockchain[len(Blockchain)-1]
@@ -101,16 +101,22 @@ func GenerateGenesisBlock(){
   Blockchain = append(Blockchain, genesisBlock)
 }
 
+
+
 // Calculate a hash using SHA256 given a block
 func calculateBlockHash(b Block, nonce uint) ([]byte, uint) {
   var blockHash []byte
+  var targetPrefix []byte = make([]byte, difficulty)
+
+  for i := 0; i < difficulty; i++ {
+    targetPrefix[i] = 48 // UTF8 encoding for "0"
+  }
 
   for {
     blockHash = crypto.DoubleSha256(b.Data())
-    startsWithTarget := cmp.Equal(blockHash[:3], []byte("000"))
+    startsWithTarget := cmp.Equal(blockHash[:3], targetPrefix)
 
     if(startsWithTarget){
-      fmt.Printf("%c\n", blockHash)
       log.Println("Solved with nonce: " + strconv.Itoa(int(nonce)))
       break;
     }
