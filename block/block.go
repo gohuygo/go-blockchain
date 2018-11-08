@@ -1,6 +1,7 @@
 package block
 
 import(
+  "bytes"
   "time"
   "log"
   "errors"
@@ -106,11 +107,13 @@ func GenerateGenesisBlock(){
 // Calculate a hash using SHA256 given a block
 func calculateBlockHash(b Block, nonce uint) ([]byte, uint) {
   var blockHash []byte
-  var targetPrefix []byte = make([]byte, difficulty)
+  // var targetPrefix []byte = make([]byte, difficulty)
 
-  for i := 0; i < difficulty; i++ {
-    targetPrefix[i] = 48 // UTF8 encoding for "0"
-  }
+  // for i := 0; i < difficulty; i++ {
+  //   targetPrefix[i] = 48 // UTF8 encoding for "0"
+  // }
+
+  targetPrefix := bytes.Repeat([]byte("0"), difficulty)
 
   for {
     blockHash = crypto.DoubleSha256(b.Data())
