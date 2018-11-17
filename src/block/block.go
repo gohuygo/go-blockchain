@@ -24,17 +24,17 @@ type Block struct {
 var Blockchain []Block
 
 const startingNonce = 0
-const genesisNonce  = 89
+const genesisNonce  = 14626
 
-const difficulty = 1
+const difficulty = 2
 
 func (b *Block) header() []byte {
     index       :=  strconv.Itoa(int(b.Index))
     transaction := string(b.Transaction)
     prevHash    := b.PrevHash
-    nonce       := strconv.Itoa(int(b.Nonce))
+    // nonce       := strconv.Itoa(int(b.Nonce))
 
-    return []byte(index + transaction + string(prevHash) + nonce)
+    return []byte(index + transaction + string(prevHash))
 }
 
 // Generate a new block and autoincrement index
@@ -49,7 +49,7 @@ func New(transaction string) *Block {
   newBlock.Transaction   = transaction
   newBlock.PrevHash      = oldBlock.Hash
 
-  newBlock.Hash,newBlock.Nonce = mine(*newBlock, startingNonce)
+  newBlock.Hash, newBlock.Nonce = mine(*newBlock, startingNonce)
 
   log.Println("Created Block #" + strconv.Itoa(int(newBlock.Index)))
   return newBlock
@@ -66,7 +66,8 @@ func IsBlockValid(newBlock Block) bool {
     return false
   }
 
-  hash := crypto.DoubleSha256(append(newBlock.header(), byte(newBlock.Nonce)))
+  guessBytes := []byte(string(newBlock.header()) + string(newBlock.Nonce))
+  hash := crypto.DoubleSha256(guessBytes)
 
   if !cmp.Equal(hash, newBlock.Hash){
     return false
@@ -104,20 +105,20 @@ func GenerateGenesis(){
 // Perform proof of work on a mine and return the blockhash and its nonce
 func mine(b Block, nonce uint) ([]byte, uint) {
   var blockHash []byte
-
   targetPrefix := bytes.Repeat([]byte("0"), difficulty)
 
   for {
-    log.Println(byte(nonce))
-    guessBytes := append(b.header(), byte(nonce))
+    // log.Println(byte(nonce))
+    guessBytes := []byte(string(b.header()) + string(nonce))
+    log.Println(string(guessBytes))
     blockHash = crypto.DoubleSha256(guessBytes)
 
-    log.Println(blockHash[:difficulty])
+    log.Println(blockHash[:difficulty], targetPrefix)
 
     startsWithTarget := cmp.Equal(blockHash[:difficulty], targetPrefix)
 
     if(startsWithTarget){
-      log.Println("Solved with nonce: " + strconv.Itoa(int(nonce)))
+      log.Println("Solved with nonce: ", nonce)
       break;
     }
 
