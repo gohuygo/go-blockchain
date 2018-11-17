@@ -11,7 +11,7 @@ import (
   "github.com/joho/godotenv"
   "github.com/davecgh/go-spew/spew"
 
-  "github.com/gohuygo/go-blockchain/block"
+  "github.com/gohuygo/go-blockchain/src/block"
 )
 
 func main() {
@@ -22,7 +22,7 @@ func main() {
 
   // Overzealous use of goroutine?
   go func() {
-    block.GenerateGenesisBlock()
+    block.GenerateGenesis()
   }()
 
   server, err := net.Listen("tcp", ":"+os.Getenv("PORT"))
@@ -63,8 +63,9 @@ func handleConn(conn net.Conn) {
     transaction := strings.TrimSpace(string(netData))
 
     // TODO: Send transaction to mempool instead
-    newBlock := *block.GenerateBlock(transaction)
+    newBlock := *block.New(transaction)
 
+    log.Println("isNewblockValid?", block.IsBlockValid(newBlock))
     if block.IsBlockValid(newBlock) {
       newBlockchain := append(block.Blockchain, newBlock)
       block.ReplaceChain(newBlockchain)
