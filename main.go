@@ -64,6 +64,7 @@ func handleConn(conn net.Conn) {
     // TODO: Send transaction to mempool instead
     newBlock := *block.New(transaction)
 
+    log.Println("isNewblockValid?", block.IsBlockValid(newBlock))
     if block.IsBlockValid(newBlock) {
       newBlockchain := append(block.Blockchain, newBlock)
       block.ReplaceChain(newBlockchain)
