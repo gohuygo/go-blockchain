@@ -31,7 +31,7 @@ func main() {
     log.Fatal(err)
   }
 
-  log.Println("HTTP Server Listening on port: ", os.Getenv("PORT"))
+  log.Println("TCP Server Listening on port: ", os.Getenv("PORT"))
 
   defer server.Close()
 
@@ -44,7 +44,6 @@ func main() {
   }
 }
 
-// Refactor to use channels?
 func handleConn(conn net.Conn) {
   defer conn.Close()
 
@@ -65,7 +64,6 @@ func handleConn(conn net.Conn) {
     // TODO: Send transaction to mempool instead
     newBlock := *block.New(transaction)
 
-    log.Println("isNewblockValid?", block.IsBlockValid(newBlock))
     if block.IsBlockValid(newBlock) {
       newBlockchain := append(block.Blockchain, newBlock)
       block.ReplaceChain(newBlockchain)

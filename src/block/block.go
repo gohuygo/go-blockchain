@@ -108,12 +108,8 @@ func mine(b Block, nonce uint) ([]byte, uint) {
   targetPrefix := bytes.Repeat([]byte("0"), difficulty)
 
   for {
-    // log.Println(byte(nonce))
     guessBytes := []byte(string(b.header()) + string(nonce))
-    log.Println(string(guessBytes))
     blockHash = crypto.DoubleSha256(guessBytes)
-
-    log.Println(blockHash[:difficulty], targetPrefix)
 
     startsWithTarget := cmp.Equal(blockHash[:difficulty], targetPrefix)
 
